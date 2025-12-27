@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include <stdio.h>
 
 struct termios orig_termios;
 
@@ -44,20 +45,37 @@ void DrawBorder(App *a) {
 }
 
 void move(int x, int y) {
+  int termRows, termCols;
+
+  // Get the terminal size dynamically
+  getTerminalSize(&termRows, &termCols);
+
+  // Ensure x and y are within the bounds of the terminal window
+  if (x < 1)
+    x = 1;
+  if (x > termCols)
+    x = termCols;
+  if (y < 1)
+    y = 1;
+  if (y > termRows)
+    y = termRows;
+
+  // Move the cursor using the ANSI escape sequence
   printf("\033[%d;%dH", y, x);
-  /*
-    if (x > 0) {
-      printf("\033[%dC", x);
-    } else if (x < 0) {
-      printf("\033[%dD", x);
-    }
-    //  Y axis
-    if (y > 0) {
-      printf("\033[%dA", y);
-    } else if (y < 0) {
-      printf("\033[%dB", y);
-    }
-    */
+  fflush(stdout);
+}
+
+void getTerminalSize(int *rows, int *cols) {
+  char buffer[32];
+  FILE *fp = popen("stty size", "r");
+  if (fp) {
+    fgets(buffer, sizeof(buffer), fp);
+    sscanf(buffer, "%d %d", rows, cols);
+    fclose(fp);
+  } else {
+    *rows = 24;
+    *cols = 80;
+  }
 }
 
 void deinitsrc() {

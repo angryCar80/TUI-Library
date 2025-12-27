@@ -1,20 +1,31 @@
+#include "button.h"
 #include "graphics.h"
 #include <stdbool.h>
+
 App a = {
-    .maxWidth = 40,
-    .maxHeight = 10,
+    .maxWidth = 50,
+    .maxHeight = 20,
     .title = "Notes App",
     .x = 10,
     .y = 10,
+};
+Button btn = {
+    .height = 10,
+    .width = 10,
+    .x = 10,
+    .y = 10,
+    .label = "Press Me",
+    .pressed = false,
 };
 
 int main() {
   initsrc();
   clear();
   DrawBorder(&a);
-  char c;
+  drawButton(&btn);
   while (true) {
-    move(40 / 2 + 1, 10 / 2 + 1);
+    move(3, 3);
+    char c;
     if (c == 'q') {
       clear();
       break;
