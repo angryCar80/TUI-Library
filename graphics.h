@@ -28,6 +28,7 @@ typedef struct {
 // BASIC TUI APP
 void initsrc();
 void deinitsrc();
+void die(const char *s);
 
 // Diplaying Functions
 void clear();

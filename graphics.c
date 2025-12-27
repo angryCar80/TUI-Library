@@ -1,5 +1,7 @@
 #include "graphics.h"
 #include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
 
 struct termios orig_termios;
 
@@ -77,31 +79,27 @@ void getTerminalSize(int *rows, int *cols) {
     *cols = 80;
   }
 }
+void die(const char *s) {
+  perror(s);
+  exit(1);
+}
 
 void deinitsrc() {
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1) {
-    printf("tcgetattr");
+    die("tcsetattr");
   }
 }
 
 void initsrc() {
-  if (tcgetattr(STDIN_FILENO, &orig_termios) == -1) {
-    printf("tcgetattr\n");
-  }
-  // atexit(deinitsrc);
-  //
+  if (tcgetattr(STDIN_FILENO, &orig_termios) == -1)
+    die("tcgetattr");
+
   struct termios raw = orig_termios;
+  raw.c_lflag &= ~(ECHO | ICANON);
+  raw.c_iflag &= ~(ICRNL | IXON);
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
-  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON | IGNBRK | PARMRK |
-                   INLCR | IGNCR);
-  raw.c_oflag &= ~(OPOST); // Disable output post-processing
-  raw.c_cflag |= (CS8);    // Set character size to 8 bits
-  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG | ECHONL);
-
-  raw.c_cc[VMIN] = 1;
-  raw.c_cc[VTIME] = 0;
-
-  if (tcgetattr(STDIN_FILENO, &raw) == -1) {
-    printf("tcgetattr\n");
-  }
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
+    die("tcsetattr");
+  atexit(deinitsrc);
 }
