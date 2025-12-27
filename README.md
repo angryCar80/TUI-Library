@@ -6,14 +6,14 @@ it needs some time but the tui lib is uses structs As the App and Button types t
 
 
 ##### How To Compile the code
-```
 `` 
 make
 ``
-```
 ##### How to Run The example
+```
 ``
 make run
 ``
+```
 
 to make the you own app just take all .h files and put them in your projects
