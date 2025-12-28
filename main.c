@@ -1,76 +1,69 @@
-#include "button.h"
 #include "graphics.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <unistd.h>
 
 typedef enum {
   NORMAL,
   INSERT,
-  VISUAL, // TODO: make the visual mode
+  VISUAL, // not implemented yet
 } modes_t;
 
 App a = {
-    .maxWidth = 50,
+    .maxWidth = 70,
     .maxHeight = 20,
     .title = "Notes App",
     .x = 10,
     .y = 10,
 };
-Button btn = {
-    .height = 10,
-    .width = 10,
-    .x = 37,
-    .y = 15,
-    .label = "Click Me!",
-    .pressed = false,
-};
 
-int main() {
+int main(void) {
   modes_t userMode = NORMAL;
-  int mouseY = 3;
-  int mouseX = 3;
-  // ENABLING RAW MODE
-  initsrc();
-  // CLEARING THE SCREEN
-  clear();
-  // DRAWING THE MAIN BORDER AND BUTTON
-  DrawBorder(&a);
-  drawButton(&btn);
-  while (true) {
-    move(mouseX, mouseY);
 
-    switch (userMode) {
-    case NORMAL:
-      initsrc();
-      break;
-    case INSERT:
-      deinitsrc();
-      break;
-    case VISUAL:
-      // TODO: DOINT LATER
-      break;
-    }
+  int cursorX = 2;
+  int cursorY = 3;
+
+  /* Enable raw mode ONCE */
+  initsrc();
+  clear();
+  DrawBorder(&a);
+
+  while (true) {
+    move(cursorX, cursorY);
 
     char c;
     if (read(STDIN_FILENO, &c, 1) != 1) {
       continue;
     }
-    if (c == 'q') {
-      deinitsrc();
-      clear();
-      break;
-    } else if (c == 'i') {
-      userMode = INSERT;
-      deinitsrc();
-    } else if (c == '\n') {
-      if (mouseY < a.maxHeight - 1) {
-        mouseY++;
+
+    if (userMode == NORMAL) {
+      if (c == 'q') {
+        break;
+      } else if (c == 'i') {
+        userMode = INSERT;
       }
-    } else if (c == '\x1b') {
-      userMode = NORMAL;
-      deinitsrc();
-      // TODO: READ MOVINENT KEYS
+    } else if (userMode == INSERT) {
+      if (c == 27) { // ESC key
+        userMode = NORMAL;
+      } else if (c == '\n') {
+        if (cursorY < a.maxHeight - 1) {
+          cursorY++;
+          cursorX = 1;
+        }
+      } else {
+        putchar(c);
+        cursorX++; // this is the problem
+
+        if (cursorX >= a.maxWidth - 1) {
+          cursorX = 1;
+          cursorY++;
+        }
+      }
     }
   }
+
+  /* Restore terminal ONCE */
+  deinitsrc();
+  clear();
   return 0;
 }
